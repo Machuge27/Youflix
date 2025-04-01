@@ -226,13 +226,13 @@ const ProfilePage = () => {
                     Sign Out
                   </button>
                   <button title="Get mMobile APP"
-                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-blue-60 hover:bg-blue-300 text-white font-medium mx-2"
+                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-blue-60 hover:bg-grey-100 text-white font-medium mx-2"
                   >
                     <LayoutGrid />
                     <span className="hidden sm:inline">Get the Mobile App</span>
                   </button>
                   <button title="Get browser extension"
-                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-bluen-60 hover:bg-blue-300 text-white font-medium mx-2"
+                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-bluen-60 hover:bg-grey-100 text-white font-medium mx-2"
                   >
                     <Blocks />
                     <span className="hidden sm:inline">Get the browser Extension</span>
