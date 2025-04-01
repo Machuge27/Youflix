@@ -73,11 +73,16 @@ const Footer = () => {
         
         {/* Bottom section with copyright */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
+          <div className="flex flex-row mb-4 md:mb-0">
             <Link to="/" className="flex items-center">
-              <span className="text-red-600 font-bold text-xl mr-2">Youflix</span>
+              <img src="/logo.jpg" alt="Youflix Logo" className="h-20 w-20 mr-2" />
             </Link>
-            <p className="mt-2 text-sm">Your personal YouTube collection manager</p>
+            <div>
+              <Link to="/" className="flex items-center">
+                <span className="text-red-600 font-bold text-xl mr-2">Youflix</span>
+              </Link>
+              <p className="mt-2 text-sm">Your personal YouTube collection manager</p>
+            </div>
           </div>
           
           <div className="text-sm">
