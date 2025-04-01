@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import videoService from "../services/videoService";
 import Navbar from "../components/layout/Navbar";
-import { Edit, User, Clock, Film, Heart, Bookmark, Settings } from "lucide-react";
+import { Edit, User, Clock, Film, Heart, Bookmark, Settings, Blocks, LayoutGrid } from "lucide-react";
 import VideoGrid from "../components/videos/VideoGrid";
 
 const ProfilePage = () => {
@@ -217,26 +217,27 @@ const ProfilePage = () => {
                   </div>
                 </div>
                 
-                <button 
-                  onClick={logout}
-                  className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 mt-4"
-                >
-                  Sign Out
-                </button>
-              </div>
-              {/* Additional Buttons */}
-              <div className="mt-8 text-center">
-                <button 
-                  className="px-6 py-3 bg-blue-600 rounded hover:bg-blue-700 text-white font-medium mx-2"
-                >
-                  Get the Mobile App
-                </button>
-                <button 
-                  className="px-6 py-3 bg-green-600 rounded hover:bg-green-700 text-white font-medium mx-2"
-                >
-                  Get the Chrome Extension
-                </button>
-              </div>
+                </div>
+                <div className="flex flex-row mt-8 text-center">
+                  <button 
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 mt-4 mr-5"
+                  >
+                    Sign Out
+                  </button>
+                  <button title="Get mMobile APP"
+                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-blue-60 hover:bg-blue-70 text-white font-medium mx-2"
+                  >
+                    <LayoutGrid />
+                    <span className="hidden sm:inline">Get the Mobile App</span>
+                  </button>
+                  <button title="Get browser extension"
+                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-bluen-60 hover:bg-blue-70 text-white font-medium mx-2"
+                  >
+                    <Blocks />
+                    <span className="hidden sm:inline">Get the browser Extension</span>
+                  </button>
+                </div>
             </div>
           )}
         </div>
