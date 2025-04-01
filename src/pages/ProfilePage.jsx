@@ -128,43 +128,43 @@ const ProfilePage = () => {
         </div>
         
         {/* Profile Tabs */}
-            <div className="mb-6">
-              <div className="flex overflow-x-auto border-b border-gray-800 mb-4">
-                <button 
-                  onClick={() => setActiveTab("watchHistory")}
-                  className={`py-3 px-4 font-medium flex items-center ${activeTab === 'watchHistory' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-                  title="History"
-                >
-                  <Clock size={18} className="mr-2" />
-                  <span className="hidden sm:inline">Watch History</span>
-                </button>
-                <button 
-                  onClick={() => setActiveTab("favorites")}
-                  className={`py-3 px-4 font-medium flex items-center ${activeTab === 'favorites' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-                  title="Favorites"
-                >
-                  <Heart size={18} className="mr-2" />
-                  <span className="hidden sm:inline">Favorites</span>
-                </button>
-                <button 
-                  onClick={() => setActiveTab("savedVideos")}
-                  className={`py-3 px-4 font-medium flex items-center ${activeTab === 'savedVideos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-                  title="Saved Videos"
-                >
-                  <Bookmark size={18} className="mr-2" />
-                  <span className="hidden sm:inline">Saved Videos</span>
-                </button>
-                <button 
-                  onClick={() => setActiveTab("settings")}
-                  className={`py-3 px-4 font-medium flex items-center ${activeTab === 'settings' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-                  title="Settings"
-                >
-                  <Settings size={18} className="mr-2" />
-                  <span className="hidden sm:inline">Settings</span>
-                </button>
-              </div>
-              
-              {/* Tab Content */}
+        <div className="mb-6">
+          <div className="flex overflow-x-auto border-b border-gray-800 mb-4">
+            <button 
+              onClick={() => setActiveTab("watchHistory")}
+              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'watchHistory' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+              title="History"
+            >
+              <Clock size={18} className="mr-2" />
+              <span className="hidden sm:inline">Watch History</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab("favorites")}
+              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'favorites' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+              title="Favorites"
+            >
+              <Heart size={18} className="mr-2" />
+              <span className="hidden sm:inline">Favorites</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab("savedVideos")}
+              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'savedVideos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+              title="Saved Videos"
+            >
+              <Bookmark size={18} className="mr-2" />
+              <span className="hidden sm:inline">Saved Videos</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab("settings")}
+              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'settings' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+              title="Settings"
+            >
+              <Settings size={18} className="mr-2" />
+              <span className="hidden sm:inline">Settings</span>
+            </button>
+          </div>
+          
+          {/* Tab Content */}
           {activeTab !== "settings" ? (
             <>
               <h2 className="text-xl font-semibold mb-4">
@@ -222,6 +222,19 @@ const ProfilePage = () => {
                   className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 mt-4"
                 >
                   Sign Out
+                </button>
+              </div>
+              {/* Additional Buttons */}
+              <div className="mt-8 text-center">
+                <button 
+                  className="px-6 py-3 bg-blue-600 rounded hover:bg-blue-700 text-white font-medium mx-2"
+                >
+                  Get the Mobile App
+                </button>
+                <button 
+                  className="px-6 py-3 bg-green-600 rounded hover:bg-green-700 text-white font-medium mx-2"
+                >
+                  Get the Chrome Extension
                 </button>
               </div>
             </div>
