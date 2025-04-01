@@ -6,7 +6,7 @@ const VideoCard = ({ video, onPlay, onAddToList }) => {
 
   return (
     <div 
-      className="relative w-64 h-36 overflow-hidden rounded-lg group"
+      className="relative w-64 mw-60 h-[12rem] overflow-hidden rounded-lg group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -40,7 +40,10 @@ const VideoCard = ({ video, onPlay, onAddToList }) => {
         <h3 className="text-sm font-semibold text-white truncate">
           {video.title}
         </h3>
-        <p className="text-xs text-gray-400">{video.channelName}</p>
+        <div className='flex flex-row justify-between items-center'>
+          <p className="text-xs text-gray-400">{video.channelName}</p>
+          <p className="text-xs text-red-400">{video.currentTime} | {video.duration}</p>
+        </div>
       </div>
     </div>
   );

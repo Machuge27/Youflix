@@ -34,9 +34,9 @@ function App() {
             <Route 
               path="/library" 
               element={
-                <ProtectedRoute>
                   <VideoLibraryPage />
-                </ProtectedRoute>
+                //<ProtectedRoute>
+                //</ProtectedRoute>
               } 
             />
             <Route 
@@ -50,9 +50,9 @@ function App() {
             <Route 
               path="/profile" 
               element={
-                <ProtectedRoute>
                   <ProfilePage />
-                </ProtectedRoute>
+                //<ProtectedRoute>
+                //</ProtectedRoute>
               } 
             />
           </Routes>

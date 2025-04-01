@@ -32,15 +32,22 @@ const VideoGrid = ({ sections }) => {
 
   return (
     <div className="p-6">
-      {sections.map((section, index) => (
-        <VideoSection
-          key={index}
-          title={section.title}
-          videos={section.videos}
-          onPlay={handlePlay}
-          onAddToList={handleAddToList}
-        />
-      ))}
+      {sections?.length > 0 ? (
+        sections.map((section, index) => (
+          <VideoSection
+            key={index}
+            title={section.title}
+            videos={section.videos}
+            onPlay={handlePlay}
+            onAddToList={handleAddToList}
+          />
+        ))
+      ) : (
+        <div className="text-center text-gray-500 mt-6">
+          No videos available.
+        </div>
+      )}
+      
     </div>
   );
 };

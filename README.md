@@ -61,3 +61,4 @@ This project is a Netflix-like application built to organize, stream, and downlo
 - Scalability: Making the backend efficient for multiple users (if needed).
 - User Authentication (Optional): To provide user-specific data.
 
+ 

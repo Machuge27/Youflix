@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useReducer } from 'react';
-import { videoService } from '../services/videoService';
+import videoService from '../services/videoService';
 
 const VideoContext = createContext();
 

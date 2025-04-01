@@ -1,6 +1,6 @@
 import api from './api';
 
-export const videoService = {
+const videoService = {
   async saveVideo(videoData) {
     try {
       const response = await api.post('videos/save/', videoData);
@@ -12,7 +12,7 @@ export const videoService = {
 
   async getVideos(filters = {}) {
     try {
-      const response = await api.get('videos/', { params: filters });
+      const response = await api.get('mark/', { params: filters });
       return response.data;
     } catch (error) {
       throw error.response?.data || { detail: 'Failed to fetch videos' };
@@ -45,3 +45,5 @@ export const videoService = {
     }
   }
 };
+
+export default videoService;
