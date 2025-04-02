@@ -72,6 +72,10 @@ const Watch = () => {
       try {
         const videoDetails = await videoService.getVideoDetails(videoId);
         setVideo(videoDetails);
+                
+        // Get related videos
+        const related = await videoService.getRelatedVideos(videoId);
+        setRelatedVideos(related);
         
         // Save to recent videos
         await videoService.addToRecentVideos({
@@ -82,10 +86,7 @@ const Watch = () => {
           category: videoDetails.category,
           currentTime: 0
         });
-        
-        // Get related videos
-        const related = await videoService.getRelatedVideos(videoId);
-        setRelatedVideos(related);
+
       } catch (error) {
         console.error("Failed to fetch video details:", error);
       }

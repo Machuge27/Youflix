@@ -73,6 +73,15 @@ const videoService = {
     }
   },
 
+  async getRelatedVideos(videoId) {
+    try {
+      const response = await api.get(`videos?related=${videoId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { detail: 'Failed to fetch related videos' };
+    }
+  },
+
   async updateVideoProgress(videoId, progressData) {
     try {
       const response = await api.patch(`videos/${videoId}/progress/`, progressData);

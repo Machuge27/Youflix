@@ -372,14 +372,14 @@ const ProfilePage = () => {
                     className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
                   >
                     <LayoutGrid size={18} />
-                    <span className="hidden sm:inline">Get the Mobile App</span>
+                    <span className="font-[10px]">Get the Mobile App</span>
                   </button>
                   <button 
                     title="Get browser extension"
                     className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
                   >
                     <Blocks size={18} />
-                    <span className="hidden sm:inline">Get the Browser Extension</span>
+                    <span className="font-[10px]">Get the Browser Extension</span>
                   </button>
                 </div>
             </div>
