@@ -35,13 +35,13 @@ const HomePage = () => {
     categoryMap.set('Recently Saved', []);
     categoryMap.set('Frequently Watched', []); // This would need logic to determine frequency
     
-    // Sort videos by savedAt date (oldest first) for Recently Saved
+    // Sort videos by savedAt date (newest first) for Recently Saved
     const sortedByDate = [...videoList].sort((a, b) => 
-      new Date(a.savedAt) - new Date(b.savedAt)
+      new Date(b.savedAt) - new Date(a.savedAt)
     );
     
     // Add the 5 oldest videos to Recently Saved
-    categoryMap.get('Recently Saved').push(...sortedByDate.slice(0, 5));
+    categoryMap.get('Recently Saved').push(...sortedByDate.slice(0, 20));
     
     // Group remaining videos by their category
     videoList.forEach(video => {
@@ -68,62 +68,62 @@ const HomePage = () => {
 
   // Fallback static data for development/testing
   const staticCategories = [
-    // {
-    //   id: 'recently-saved',
-    //   name: 'Recently Saved',
-    //   videos: [
-    //     {
-    //       id: 106,
-    //       channelName: "Chris Brown",
-    //       currentTime: "0:00",
-    //       duration: "4:53",
-    //       savedAt: "2025-03-31T08:29:02.832Z",
-    //       title: "Pills & Automobiles (Official Video)",
-    //       url: "https://www.youtube.com/watch?v=GTexe8c0eqw&list=RDlVNt1sUWyDU&index=2",
-    //       videoId: "GTexe8c0eqw",
-    //       category: "Hip-hop"
-    //     },
-    //     {
-    //       id: 105,
-    //       channelName: "QualityControlVEVO",
-    //       currentTime: "0:03",
-    //       duration: "4:02",
-    //       savedAt: "2025-03-31T08:28:55.234Z",
-    //       title: "Quality Control, Quavo, Nicki Minaj - She For Keeps (Official Music Video)",
-    //       url: "https://www.youtube.com/watch?v=lVNt1sUWyDU&list=RDlVNt1sUWyDU&index=1",
-    //       videoId: "lVNt1sUWyDU",
-    //       category: "Hip-hop"
-    //     }
-    //   ]
-    // },
-    // {
-    //   id: 'hip-hop',
-    //   name: 'Hip-hop',
-    //   videos: [
-    //     {
-    //       id: 106,
-    //       channelName: "Chris Brown",
-    //       currentTime: "0:00",
-    //       duration: "4:53",
-    //       savedAt: "2025-03-31T08:29:02.832Z",
-    //       title: "Pills & Automobiles (Official Video)",
-    //       url: "https://www.youtube.com/watch?v=GTexe8c0eqw&list=RDlVNt1sUWyDU&index=2",
-    //       videoId: "GTexe8c0eqw",
-    //       category: "Hip-hop"
-    //     },
-    //     {
-    //       id: 105,
-    //       channelName: "QualityControlVEVO",
-    //       currentTime: "0:03",
-    //       duration: "4:02",
-    //       savedAt: "2025-03-31T08:28:55.234Z",
-    //       title: "Quality Control, Quavo, Nicki Minaj - She For Keeps (Official Music Video)",
-    //       url: "https://www.youtube.com/watch?v=lVNt1sUWyDU&list=RDlVNt1sUWyDU&index=1",
-    //       videoId: "lVNt1sUWyDU",
-    //       category: "Hip-hop"
-    //     }
-    //   ]
-    // }
+    {
+      id: 'recently-saved',
+      name: 'Recently Saved',
+      videos: [
+        {
+          id: 106,
+          channelName: "Chris Brown",
+          currentTime: "0:00",
+          duration: "4:53",
+          savedAt: "2025-03-31T08:29:02.832Z",
+          title: "Pills & Automobiles (Official Video)",
+          url: "https://www.youtube.com/watch?v=GTexe8c0eqw&list=RDlVNt1sUWyDU&index=2",
+          videoId: "GTexe8c0eqw",
+          category: "Hip-hop"
+        },
+        {
+          id: 105,
+          channelName: "QualityControlVEVO",
+          currentTime: "0:03",
+          duration: "4:02",
+          savedAt: "2025-03-31T08:28:55.234Z",
+          title: "Quality Control, Quavo, Nicki Minaj - She For Keeps (Official Music Video)",
+          url: "https://www.youtube.com/watch?v=lVNt1sUWyDU&list=RDlVNt1sUWyDU&index=1",
+          videoId: "lVNt1sUWyDU",
+          category: "Hip-hop"
+        }
+      ]
+    },
+    {
+      id: 'hip-hop',
+      name: 'Hip-hop',
+      videos: [
+        {
+          id: 106,
+          channelName: "Chris Brown",
+          currentTime: "0:00",
+          duration: "4:53",
+          savedAt: "2025-03-31T08:29:02.832Z",
+          title: "Pills & Automobiles (Official Video)",
+          url: "https://www.youtube.com/watch?v=GTexe8c0eqw&list=RDlVNt1sUWyDU&index=2",
+          videoId: "GTexe8c0eqw",
+          category: "Hip-hop"
+        },
+        {
+          id: 105,
+          channelName: "QualityControlVEVO",
+          currentTime: "0:03",
+          duration: "4:02",
+          savedAt: "2025-03-31T08:28:55.234Z",
+          title: "Quality Control, Quavo, Nicki Minaj - She For Keeps (Official Music Video)",
+          url: "https://www.youtube.com/watch?v=lVNt1sUWyDU&list=RDlVNt1sUWyDU&index=1",
+          videoId: "lVNt1sUWyDU",
+          category: "Hip-hop"
+        }
+      ]
+    }
   ];
 
   // Use API organized data if available, otherwise fall back to static data

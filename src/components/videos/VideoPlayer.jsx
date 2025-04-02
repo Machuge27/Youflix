@@ -245,6 +245,29 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose, onEnded, onNext, onPre
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
   }, [isYouTube]);
+  
+  // Show controls on mouse move and hide after 3 seconds of inactivity
+  useEffect(() => {
+    const handleMouseMove = () => {
+      setShowControls(true);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    if (showControls) {
+      const timeout = setTimeout(() => {
+        setShowControls(false);
+      }, 3000); // Hide controls after 3 seconds of inactivity
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [showControls]);
 
   return (
     <div 
@@ -287,22 +310,28 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose, onEnded, onNext, onPre
         </div>
         
         {/* Progress bar - always visible */}
-        <div className="absolute bottom-10 left-0 right-0 px-3">
-          <div className="flex items-center">
-            <span className="text-white text-xs mr-2">{formatTime(currentTime)}</span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={(currentTime / duration) * 100 || 0}
-              onChange={handleSeek}
-              className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-            />
-            <span className="text-white text-xs ml-2">{formatTime(duration)}</span>
+          <div className="absolute bottom-10 left-0 right-0 px-3">
+            <div className="flex items-center">
+              <span className="text-white text-xs mr-2">{formatTime(currentTime)}</span>
+              <div className="relative w-full h-1 bg-gray-600 rounded-lg">
+                <div
+            className="absolute top-0 left-0 h-full bg-green-500 rounded-lg"
+            style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
+                ></div>
+                <input
+            type="range"
+            min="0"
+            max="100"
+            value={(currentTime / duration) * 100 || 0}
+            onChange={handleSeek}
+            className="absolute top-0 left-0 w-full h-full appearance-none cursor-pointer bg-transparent"
+                />
+              </div>
+              <span className="text-white text-xs ml-2">{formatTime(duration)}</span>
+            </div>
           </div>
-        </div>
-        
-        {/* Bottom controls - only show on hover */}
+          
+          {/* Bottom controls - only show on hover */}
         <div 
           className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition-opacity duration-300 ${showControls || playerState === "minimized" ? 'opacity-100' : 'opacity-0'}`}
         >

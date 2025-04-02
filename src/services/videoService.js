@@ -64,6 +64,15 @@ const videoService = {
     }
   },
 
+  async getVideoDetails(videoId) {
+    try {
+      const response = await api.get(`videos?details=${videoId}`); //?details=zWnUsvm_KqI
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { detail: 'Failed to fetch video' };
+    }
+  },
+
   async updateVideoProgress(videoId, progressData) {
     try {
       const response = await api.patch(`videos/${videoId}/progress/`, progressData);
