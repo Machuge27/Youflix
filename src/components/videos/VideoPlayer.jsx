@@ -544,7 +544,7 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose, onEnded, onNext, onPre
               <div className="relative w-40 h-24 flex-none">
                 <img 
                   src={video.thumbnail} 
-                  alt={video.title} 
+                  alt={video.videoId} 
                   className="w-full h-full object-cover rounded-lg"
                 />
                 <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1 rounded">
