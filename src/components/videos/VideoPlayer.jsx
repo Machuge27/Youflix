@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Maximize2, Minimize2, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { X, Maximize2, Minimize2, Play, Pause, Volume2, VolumeX, SkipForward, SkipBack, PictureInPicture } from "lucide-react";
 
-const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
+const VideoPlayer = ({ videoId, videoTitle, url, onClose, onEnded, onNext, onPrevious }) => {
   // Three possible states: fullscreen, minimized, or floating
   const [playerState, setPlayerState] = useState("fullscreen"); // "fullscreen", "minimized", "floating"
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(false);
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   
@@ -40,15 +41,23 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
         setDuration(video.duration);
       };
       
+      const handleVideoEnded = () => {
+        if (onEnded) {
+          onEnded();
+        }
+      };
+      
       video.addEventListener("timeupdate", handleTimeUpdate);
-      video.addEventListener("loadedMetadata", handleLoadedMetadata);
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("ended", handleVideoEnded);
       
       return () => {
         video.removeEventListener("timeupdate", handleTimeUpdate);
-        video.removeEventListener("loadedMetadata", handleLoadedMetadata);
+        video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        video.removeEventListener("ended", handleVideoEnded);
       };
     }
-  }, [isYouTube]);
+  }, [isYouTube, onEnded]);
 
   // Handle ESC key press
   useEffect(() => {
@@ -95,6 +104,11 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
               setIsPlaying(true);
             } else if (event.data === window.YT.PlayerState.PAUSED) {
               setIsPlaying(false);
+            } else if (event.data === window.YT.PlayerState.ENDED) {
+              // Handle video end
+              if (onEnded) {
+                onEnded();
+              }
             }
           },
         }
@@ -111,7 +125,7 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
         clearInterval(timeUpdateInterval);
       };
     }
-  }, [isYouTube, youtubeVideoId, isPlaying, isMuted]);
+  }, [isYouTube, youtubeVideoId, isPlaying, isMuted, onEnded]);
   
   // Control functions - updated to work with both direct video and YouTube
   const togglePlay = () => {
@@ -191,6 +205,34 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
     }
   };
 
+  // Toggle Picture in Picture mode
+  const togglePictureInPicture = async () => {
+    try {
+      if (!isYouTube && videoRef.current) {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        } else {
+          await videoRef.current.requestPictureInPicture();
+        }
+      } else if (isYouTube) {
+        // For YouTube, we'd need to extract the iframe video element
+        const iframe = document.getElementById('youtube-player');
+        if (iframe) {
+          const video = iframe.querySelector('video');
+          if (video) {
+            if (document.pictureInPictureElement) {
+              await document.exitPictureInPicture();
+            } else {
+              await video.requestPictureInPicture();
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("PiP error:", error);
+    }
+  };
+
   // Script to load YouTube iframe API
   useEffect(() => {
     if (isYouTube && !window.YT) {
@@ -205,7 +247,12 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
   }, [isYouTube]);
 
   return (
-    <div ref={playerRef} className={`${getPlayerClasses()} transition-all duration-300 overflow-hidden`}>
+    <div 
+      ref={playerRef} 
+      className={`${getPlayerClasses()} transition-all duration-300 overflow-hidden`}
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
+    >
       <div className="relative w-full h-full">
         {/* Video - conditional rendering based on source type */}
         {isYouTube ? (
@@ -221,8 +268,10 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
           />
         )}
         
-        {/* Top bar with controls */}
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-3 flex justify-between items-center">
+        {/* Top bar with controls - only show on hover */}
+        <div 
+          className={`absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-3 flex justify-between items-center transition-opacity duration-300 ${showControls || playerState === "minimized" ? 'opacity-100' : 'opacity-0'}`}
+        >
           <h3 className="text-white text-sm md:text-base truncate flex-1">
             Now Playing {playerState === "minimized" ? "" : `- ${videoTitle || (url ? url.split('/').pop() : '')}`}
           </h3>
@@ -237,10 +286,9 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
           </div>
         </div>
         
-        {/* Bottom controls */}
-        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 ${playerState === "minimized" ? "hidden opacity-0 group-hover:opacity-100 group-hover:block" : ""}`}>
-          {/* Progress bar */}
-          <div className="flex items-center mb-2">
+        {/* Progress bar - always visible */}
+        <div className="absolute bottom-10 left-0 right-0 px-3">
+          <div className="flex items-center">
             <span className="text-white text-xs mr-2">{formatTime(currentTime)}</span>
             <input
               type="range"
@@ -252,15 +300,34 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose }) => {
             />
             <span className="text-white text-xs ml-2">{formatTime(duration)}</span>
           </div>
-          
+        </div>
+        
+        {/* Bottom controls - only show on hover */}
+        <div 
+          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition-opacity duration-300 ${showControls || playerState === "minimized" ? 'opacity-100' : 'opacity-0'}`}
+        >
           {/* Control buttons */}
           <div className="flex justify-between items-center">
-            <button onClick={togglePlay} className="text-white hover:text-blue-400">
-              {isPlaying ? <Pause size={playerState === "minimized" ? 14 : 18} /> : <Play size={playerState === "minimized" ? 14 : 18} />}
-            </button>
-            <button onClick={toggleMute} className="text-white hover:text-blue-400">
-              {isMuted ? <VolumeX size={playerState === "minimized" ? 14 : 18} /> : <Volume2 size={playerState === "minimized" ? 14 : 18} />}
-            </button>
+            <div className="flex items-center space-x-4">
+              <button onClick={onPrevious} className="text-white hover:text-blue-400">
+                <SkipBack size={playerState === "minimized" ? 14 : 18} />
+              </button>
+              <button onClick={togglePlay} className="text-white hover:text-blue-400">
+                {isPlaying ? <Pause size={playerState === "minimized" ? 14 : 18} /> : <Play size={playerState === "minimized" ? 14 : 18} />}
+              </button>
+              <button onClick={onNext} className="text-white hover:text-blue-400">
+                <SkipForward size={playerState === "minimized" ? 14 : 18} />
+              </button>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <button onClick={toggleMute} className="text-white hover:text-blue-400">
+                {isMuted ? <VolumeX size={playerState === "minimized" ? 14 : 18} /> : <Volume2 size={playerState === "minimized" ? 14 : 18} />}
+              </button>
+              <button onClick={togglePictureInPicture} className="text-white hover:text-blue-400">
+                <PictureInPicture size={playerState === "minimized" ? 14 : 18} />
+              </button>
+            </div>
           </div>
         </div>
         

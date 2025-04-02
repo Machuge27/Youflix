@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import videoService from "../services/videoService";
 import Navbar from "../components/layout/Navbar";
 import { Edit, User, Clock, Film, Heart, Bookmark, Settings, Blocks, LayoutGrid } from "lucide-react";
-import VideoGrid from "../components/videos/VideoGrid";
+import VideoPlayer from "../components/videos/VideoPlayer";
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
@@ -19,6 +19,10 @@ const ProfilePage = () => {
     bio: "Video enthusiast and content creator",
     joinDate: "January 2023"
   });
+  
+  // New state for video player
+  const [currentVideo, setCurrentVideo] = useState(null);
+  const [showPlayer, setShowPlayer] = useState(false);
 
   useEffect(() => {
     const fetchUserVideos = async () => {
@@ -28,10 +32,33 @@ const ProfilePage = () => {
         const favorites = await videoService.getFavorites();
         const saved = await videoService.getSavedVideos();
         
+        // Transform the data to ensure we can handle the structure shown in the image
+        const transformVideos = (videoArray) => {
+          return Array.isArray(videoArray) ? videoArray.map(video => {
+            // Check if video is already in the expected format or needs transformation
+            if (video.category && video.channelName && video.videoId) {
+              return {
+                id: video.id || video.videoId,
+                title: video.title || "Untitled Video",
+                thumbnail: `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`,
+                duration: video.duration || "0:00",
+                channelName: video.channelName,
+                category: video.category,
+                url: video.url,
+                savedAt: video.savedAt,
+                currentTime: video.currentTime || "0:00"
+              };
+            }
+            return video; // Return as is if already in expected format
+          }) : [];
+        };
+        
+        console.log("Fetched favorites:", favorites);
+        
         setVideos({
-          watchHistory: history || [],
-          favorites: favorites || [],
-          savedVideos: saved || []
+          watchHistory: transformVideos(history || []),
+          favorites: transformVideos(favorites || []),
+          savedVideos: transformVideos(saved || [])
         });
       } catch (error) {
         console.error("Failed to fetch user videos:", error);
@@ -50,6 +77,78 @@ const ProfilePage = () => {
   const getActiveVideos = () => {
     return videos[activeTab] || [];
   };
+
+  // Format timestamp for display (converts "1:35:38" format or seconds to readable format)
+  const formatDuration = (duration) => {
+    if (!duration) return "--:--";
+    
+    // If already in string format like "1:35:38", return as is
+    if (typeof duration === 'string' && duration.includes(':')) {
+      return duration;
+    }
+    
+    // If in seconds, convert to HH:MM:SS
+    const seconds = parseInt(duration, 10);
+    if (isNaN(seconds)) return "--:--";
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Format date from timestamp
+  const formatSavedDate = (timestamp) => {
+    if (!timestamp) return "";
+    
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch (e) {
+      return timestamp; // Return original if parsing fails
+    }
+  };
+
+  // Play a video
+  const playVideo = (video) => {
+    setCurrentVideo(video);
+    setShowPlayer(true);
+  };
+
+  // Close the video player
+  const closePlayer = () => {
+    setShowPlayer(false);
+    setCurrentVideo(null);
+  };
+
+  // Function to play the next video when current one ends
+  const playNextVideo = useCallback(() => {
+    if (!currentVideo) return;
+    
+    const activeVideosList = getActiveVideos();
+    const currentIndex = activeVideosList.findIndex(v => v.id === currentVideo.id);
+    
+    if (currentIndex >= 0 && currentIndex < activeVideosList.length - 1) {
+      // Play next video in the list
+      setCurrentVideo(activeVideosList[currentIndex + 1]);
+    } else if (activeVideosList.length > 0) {
+      // Loop back to first video if at the end of the list
+      setCurrentVideo(activeVideosList[0]);
+    }
+  }, [currentVideo, getActiveVideos]);
+
+  // Handle video end
+  const handleVideoEnd = useCallback(() => {
+    playNextVideo();
+  }, [playNextVideo]);
 
   return (
     <div className="bg-black min-h-screen text-white">
@@ -172,9 +271,52 @@ const ProfilePage = () => {
                  activeTab === "favorites" ? "Favorites" : 
                  "Saved Videos"}
               </h2>
-              <VideoGrid videos={getActiveVideos()} />
               
-              {getActiveVideos().length === 0 && (
+              {getActiveVideos().length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {getActiveVideos().map((video, index) => (
+                    <div 
+                      key={video.id || index} 
+                      className="bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:bg-gray-800 transition-colors"
+                      onClick={() => playVideo(video)}
+                    >
+                      <div className="relative">
+                        <img 
+                          src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`} 
+                          alt={video.title} 
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 px-2 py-1 text-xs rounded">
+                          {formatDuration(video.duration)}
+                        </div>
+                        {video.currentTime && video.currentTime !== "0:00" && (
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                            <div 
+                              className="h-full bg-red-500" 
+                              style={{ 
+                                width: `${(parseFloat(video.currentTime.split(':').reduce((acc, time) => (60 * acc) + +time)) / 
+                                         parseFloat(video.duration.split(':').reduce((acc, time) => (60 * acc) + +time))) * 100}%` 
+                              }}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-medium line-clamp-2 mb-1">{video.title}</h3>
+                        <p className="text-gray-400 text-sm">
+                          {video.channelName}
+                          {video.category && <span className="ml-2 px-2 py-0.5 bg-gray-800 rounded-full text-xs">{video.category}</span>}
+                        </p>
+                        {video.savedAt && (
+                          <p className="text-gray-500 text-xs mt-2">
+                            Saved on {formatSavedDate(video.savedAt)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
                 <div className="text-center py-12">
                   <Film size={48} className="mx-auto text-gray-600 mb-4" />
                   <h3 className="text-xl font-medium text-gray-400">No videos found</h3>
@@ -218,30 +360,43 @@ const ProfilePage = () => {
                 </div>
                 
                 </div>
-                <div className="flex flex-row mt-8 text-center">
+                <div className="flex flex-col sm:flex-row mt-8 gap-4">
                   <button 
                     onClick={logout}
-                    className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 mt-4 mr-5"
+                    className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
                   >
                     Sign Out
                   </button>
-                  <button title="Get mMobile APP"
-                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-blue-60 hover:bg-grey-100 text-white font-medium mx-2"
+                  <button 
+                    title="Get Mobile App"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
                   >
-                    <LayoutGrid />
+                    <LayoutGrid size={18} />
                     <span className="hidden sm:inline">Get the Mobile App</span>
                   </button>
-                  <button title="Get browser extension"
-                    className="flex flec-row border-b border-grey-200 gap-4 px-2 py-3 bg-bluen-60 hover:bg-grey-100 text-white font-medium mx-2"
+                  <button 
+                    title="Get browser extension"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
                   >
-                    <Blocks />
-                    <span className="hidden sm:inline">Get the browser Extension</span>
+                    <Blocks size={18} />
+                    <span className="hidden sm:inline">Get the Browser Extension</span>
                   </button>
                 </div>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Video Player */}
+      {showPlayer && currentVideo && (
+        <VideoPlayer 
+          videoId={currentVideo.id || currentVideo.videoId}
+          videoTitle={currentVideo.title}
+          url={currentVideo.url}
+          onClose={closePlayer}
+          onEnded={handleVideoEnd}
+        />
+      )}
     </div>
   );
 };

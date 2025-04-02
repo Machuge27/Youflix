@@ -27,6 +27,42 @@ const videoService = {
       throw error.response?.data || { detail: 'Failed to fetch video' };
     }
   },
+  
+  async getFavorites() {
+    try {
+      const response = await api.get(`videos?filter=favourites`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { detail: 'Failed to fetch video' };
+    }
+  },
+  
+  async getWatchHistory() {
+    try {
+      const response = await api.get(`videos?filter=recently-saved`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { detail: 'Failed to fetch video' };
+    }
+  },
+
+  async getSavedVideos() {
+    try {
+      const response = await api.get(`videos?filter=recently-saved`);
+      return [] //response.data;
+    } catch (error) {
+      throw error.response?.data || { detail: 'Failed to fetch video' };
+    }
+  },
+
+  async searchVideos(query) {
+    try {
+      const response = await api.get(`videos?search=${query}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { detail: 'Failed to fetch video' };
+    }
+  },
 
   async updateVideoProgress(videoId, progressData) {
     try {

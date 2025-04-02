@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   HomeIcon, 
   FilmIcon, 
@@ -10,13 +10,18 @@ import {
   XIcon
 } from '@heroicons/react/solid';
 import { useAuth } from '../../context/AuthContext';
+import videoService from '../../services/videoService';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const { user, logout } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const navigate = useNavigate();
 
   // Responsive check
   useEffect(() => {
@@ -32,13 +37,72 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Search functionality
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        performSearch(searchQuery);
+      } else {
+        setSearchResults([]);
+        setShowSearchResults(false);
+      }
+    }, 300);
+    
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+  
+  // Handle click outside to close search results
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showSearchResults && !event.target.closest('.search-container')) {
+        setShowSearchResults(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSearchResults]);
+
+  const performSearch = async (query) => {
+    if (!query.trim()) return;
+    
+    setIsSearching(true);
+    
+    try {
+      // Assuming videoService has a search method
+      const results = await videoService.searchVideos(query);
+      setSearchResults(results);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error("Search failed:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
-    // Implement search logic
-    console.log('Searching for:', searchQuery);
+    
+    // Only navigate if there's a search query
+    if (searchQuery.trim()) {
+      // Navigate to search page with the query parameter
+      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+      
+      // Reset search field and close results
+      setSearchQuery('');
+      setShowSearchResults(false);
+    }
+    
+    // Close search bar on mobile after search
     if (isMobile) {
       setShowSearch(false);
     }
+  };
+
+  const navigateToVideo = (videoId, currentTime) => {
+    navigate(`/watch/${videoId}?t=${encodeURIComponent(currentTime || '0:00')}`);
+    setShowSearchResults(false);
+    setSearchQuery('');
   };
 
   const toggleMobileMenu = () => {
@@ -49,6 +113,15 @@ const Navbar = () => {
   const toggleSearch = () => {
     setShowSearch(!showSearch);
     if (mobileMenuOpen) setMobileMenuOpen(false);
+  };
+
+  const formatDuration = (duration) => {
+    return duration || "0:00";
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
@@ -83,18 +156,76 @@ const Navbar = () => {
 
         {/* Desktop: Search Bar */}
         {!isMobile && (
-          <form onSubmit={handleSearch} className="flex-grow max-w-xl mx-6">
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Search videos, categories..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-              />
-              <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            </div>
-          </form>
+          <div className="flex-grow max-w-xl mx-6 relative search-container">
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  placeholder="Search videos, categories..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                  onFocus={() => {
+                    if (searchResults.length > 0) {
+                      setShowSearchResults(true);
+                    }
+                  }}
+                />
+                {isSearching ? (
+                  <div className="absolute right-3 top-2.5">
+                    <div className="h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                )}
+              </div>
+            </form>
+            
+            {/* Search Results Dropdown */}
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 rounded-lg shadow-lg overflow-hidden z-50">
+                <div className="max-h-96 overflow-y-auto">
+                  {searchResults.map((video) => (
+                    <div 
+                      key={video.id}
+                      className="px-4 py-2 hover:bg-gray-800 cursor-pointer"
+                      onClick={() => navigateToVideo(video.videoId, video.currentTime)}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-16 h-12 bg-gray-800 rounded overflow-hidden">
+                          <img 
+                            src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white truncate">{video.title}</p>
+                          <p className="text-xs text-gray-400">{video.channelName}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-xs text-gray-500">{formatDuration(video.duration)}</span>
+                            {video.savedAt && (
+                              <span className="text-xs text-gray-500">{formatDate(video.savedAt)}</span>
+                            )}
+                            <span className="text-xs px-1.5 py-0.5 bg-gray-700 text-gray-300 rounded">{video.category}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="px-4 py-2 border-t border-gray-800">
+                    <button 
+                      onClick={handleSearch}
+                      className="w-full text-center text-sm text-red-600 hover:text-red-500"
+                    >
+                      View all results for "{searchQuery}"
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Desktop: User Profile & Actions */}
@@ -148,7 +279,7 @@ const Navbar = () => {
 
       {/* Mobile: Search Bar */}
       {isMobile && showSearch && (
-        <div className="mt-3">
+        <div className="mt-3 search-container">
           <form onSubmit={handleSearch}>
             <div className="relative">
               <input 
@@ -158,10 +289,63 @@ const Navbar = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                 autoFocus
+                onFocus={() => {
+                  if (searchResults.length > 0) {
+                    setShowSearchResults(true);
+                  }
+                }}
               />
-              <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              {isSearching ? (
+                <div className="absolute right-3 top-2.5">
+                  <div className="h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              )}
             </div>
           </form>
+          
+          {/* Mobile Search Results */}
+          {showSearchResults && searchResults.length > 0 && (
+            <div className="mt-2 bg-gray-900 rounded-lg shadow-lg overflow-hidden">
+              <div className="max-h-96 overflow-y-auto">
+                {searchResults.map((video) => (
+                  <div 
+                    key={video.id}
+                    className="p-3 border-b border-gray-800 hover:bg-gray-800 cursor-pointer"
+                    onClick={() => navigateToVideo(video.videoId, video.currentTime)}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-16 h-12 bg-gray-800 rounded overflow-hidden">
+                        <img 
+                          src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white truncate">{video.title}</p>
+                        <p className="text-xs text-gray-400">{video.channelName}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500">{formatDuration(video.duration)}</span>
+                          <span className="text-xs px-1.5 py-0.5 bg-gray-700 text-gray-300 rounded">{video.category}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="p-3 border-t border-gray-800">
+                  <button 
+                    onClick={handleSearch}
+                    className="w-full text-center text-sm text-red-600 hover:text-red-500"
+                  >
+                    View all results
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
