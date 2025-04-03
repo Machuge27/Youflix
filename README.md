@@ -61,4 +61,20 @@ This project is a Netflix-like application built to organize, stream, and downlo
 - Scalability: Making the backend efficient for multiple users (if needed).
 - User Authentication (Optional): To provide user-specific data.
 
- 
+---
+
+## 📦 Backing Up Data on MongoDB Atlas
+To prevent data loss, the application supports **automatic backups on MongoDB Atlas**, a cloud-based database service. This ensures that saved videos and metadata remain secure and accessible even in case of system failures.
+
+### ✅ **Why Use MongoDB Atlas for Backup?**
+- Secure cloud storage
+- Easy access from multiple devices
+- Automatic scaling and backups
+- Reliable data recovery
+
+### 🔄 **How Backup Works**
+- The app automatically stores video details and metadata on MongoDB Atlas.
+- Backups run periodically to keep data safe.
+- In case of any issues, the backup can be restored to retrieve lost data.
+
+By integrating MongoDB Atlas, users can enjoy a seamless experience without worrying about data loss. 🚀
