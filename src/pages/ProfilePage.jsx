@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import videoService from "../services/videoService";
 import Navbar from "../components/layout/Navbar";
-import { Edit, User, Clock, Film, Heart, Bookmark, Settings, Blocks, LayoutGrid } from "lucide-react";
+import { Edit, User, Clock, Film, Heart, Bookmark, Settings, Blocks, LayoutGrid, DatabaseBackup } from "lucide-react";
 import VideoPlayer from "../components/videos/VideoPlayer";
+import { toast } from 'react-toastify';
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
@@ -149,6 +150,21 @@ const ProfilePage = () => {
   const handleVideoEnd = useCallback(() => {
     playNextVideo();
   }, [playNextVideo]);
+
+  // Handle videos backup
+  const handleBackup = useCallback(async () => {
+    try {
+      const response = await videoService.backupVideos();
+      if (response.status === 'success') {
+        toast.success(`${response.message}`);
+      } else {
+        toast.error(`${response.message}`);
+      }
+    } catch (error) {
+      console.error("Error during backup:", error);
+      toast.error("An error occurred. Please try again.");
+    }
+  }, []);
 
   return (
     <div className="bg-black min-h-screen text-white">
@@ -380,6 +396,14 @@ const ProfilePage = () => {
                   >
                     <Blocks size={18} />
                     <span className="font-[10px]">Get the Browser Extension</span>
+                  </button>
+                  <button 
+                    title="Get browser extension"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-green-700 rounded text-white font-medium"
+                    onClick={handleBackup}
+                  >
+                    <DatabaseBackup size={18} />
+                    <span className="font-[10px]">Backup</span>
                   </button>
                 </div>
             </div>

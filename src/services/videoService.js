@@ -82,6 +82,15 @@ const videoService = {
     }
   },
 
+  async backupVideos(videoId) {
+    try {
+      const response = await api.post(`api/backup/`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { detail: 'Failed back videos' };
+    }
+  },
+
   async updateVideoProgress(videoId, progressData) {
     try {
       const response = await api.patch(`videos/${videoId}/progress/`, progressData);
