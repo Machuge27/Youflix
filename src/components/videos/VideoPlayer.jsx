@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, Maximize2, Minimize2, Play, Pause, Volume2, VolumeX, SkipForward, SkipBack, PictureInPicture } from "lucide-react";
 import videoService from "../../services/videoService";
 
 const VideoPlayer = ({ videoId, videoTitle, url, onClose, onEnded, onNext, onPrevious }) => {
   // Three possible states: fullscreen, maximized, floating, minimized
+  const navigate = useNavigate();
   const [playerState, setPlayerState] = useState("fullscreen"); // "fullscreen", "maximized", "floating", "minimized"
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -345,6 +347,7 @@ const VideoPlayer = ({ videoId, videoTitle, url, onClose, onEnded, onNext, onPre
     if (typeof window !== 'undefined') {
       const newUrl = `/watch?v=${relatedVideoId}`;
       window.history.pushState({}, '', newUrl);
+      navigate(newUrl);
       
       // In a real app, you would update your app's state or reload the component
       // with the new videoId. For this example, we'll just log it:

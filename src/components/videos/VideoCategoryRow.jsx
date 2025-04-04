@@ -18,7 +18,7 @@ const VideoCategoryRow = ({ title, videos }) => {
     setCurrentVideoIndex(videoIndex);
     
     // Update URL for sharing/bookmarking purposes
-    // window.history.pushState({}, "", `/watch/${video.videoId}`);
+    window.history.pushState({}, "", `/watch/${video.videoId}`);
     navigate(`/watch/${video.videoId}`);
   };
 
