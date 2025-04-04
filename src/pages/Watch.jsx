@@ -204,10 +204,10 @@ const Watch = () => {
   // YouTube iframe API reference
   const youtubePlayerRef = useRef(null);
   
-  // This function handles YouTube iframe API interactions
   useEffect(() => {
+    let timeUpdateInterval;
+  
     if (isYouTube && window.YT) {
-      // Initialize YouTube Player if YT API is available
       youtubePlayerRef.current = new window.YT.Player('youtube-player', {
         videoId: youtubeVideoId,
         playerVars: {
@@ -220,49 +220,55 @@ const Watch = () => {
         },
         events: {
           onReady: (event) => {
-            // Update duration when player is ready
-            if (event.target.getDuration) {
-              setDuration(event.target.getDuration());
-            }
+            const duration = event.target.getDuration();
+            setDuration(duration);
           },
           onStateChange: (event) => {
-            // Update play state based on YT player state
-            if (event.data === window.YT.PlayerState.PLAYING) {
+            const playerState = window.YT.PlayerState;
+            if (event.data === playerState.PLAYING) {
               setIsPlaying(true);
-            } else if (event.data === window.YT.PlayerState.PAUSED) {
+            } else if (event.data === playerState.PAUSED) {
               setIsPlaying(false);
-            } else if (event.data === window.YT.PlayerState.ENDED) {
-              // Handle video end
+            } else if (event.data === playerState.ENDED) {
               handleVideoEnded();
             }
           },
         }
       });
-      
-      // Set up interval to update current time
-      const timeUpdateInterval = setInterval(() => {
-        if (youtubePlayerRef.current && youtubePlayerRef.current.getCurrentTime) {
+  
+      // Setup time tracking
+      timeUpdateInterval = setInterval(() => {
+        if (youtubePlayerRef.current?.getCurrentTime && youtubePlayerRef.current?.getDuration) {
           try {
-            setCurrentTime(youtubePlayerRef.current.getCurrentTime());
+            const current = youtubePlayerRef.current.getCurrentTime();
+            const total = youtubePlayerRef.current.getDuration();
+  
+            setCurrentTime(current);
+  
+            // If within 1s of duration, treat as ended
+            if (total - current <= 1 && isPlaying) {
+              handleVideoEnded();
+            }
+  
           } catch (e) {
-            console.error("Error getting YouTube current time:", e);
+            console.error("Error getting YouTube player time:", e);
           }
         }
       }, 1000);
-      
-      return () => {
-        clearInterval(timeUpdateInterval);
-        // Clean up YouTube player when component unmounts
-        if (youtubePlayerRef.current) {
-          try {
-            youtubePlayerRef.current.destroy();
-          } catch (e) {
-            console.error("Error destroying YouTube player:", e);
-          }
-        }
-      };
     }
+  
+    return () => {
+      clearInterval(timeUpdateInterval);
+      if (youtubePlayerRef.current) {
+        try {
+          youtubePlayerRef.current.destroy();
+        } catch (e) {
+          console.error("Error destroying YouTube player:", e);
+        }
+      }
+    };
   }, [isYouTube, youtubeVideoId, isPlaying, isMuted]);
+  
   
   // Control functions - updated to work with both direct video and YouTube
   const togglePlay = () => {
