@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import VideoCard from "./VideoCard";
 import VideoPlayer from "./VideoPlayer";
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 const VideoCategoryRow = ({ title, videos }) => {
   const [currentVideo, setCurrentVideo] = useState(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(-1);
+  const navigate = useNavigate();
 
   const handlePlay = (video) => {
     // Find the index of the selected video in the array
@@ -16,7 +18,8 @@ const VideoCategoryRow = ({ title, videos }) => {
     setCurrentVideoIndex(videoIndex);
     
     // Update URL for sharing/bookmarking purposes
-    window.history.pushState({}, "", `/watch/${video.videoId}`);
+    // window.history.pushState({}, "", `/watch/${video.videoId}`);
+    navigate(`/watch/${video.videoId}`);
   };
 
   const handleClosePlayer = () => {
@@ -96,7 +99,7 @@ const VideoCategoryRow = ({ title, videos }) => {
       </div>
 
       {/* Render the video player if a video is selected */}
-      {currentVideo && (
+      {/* {currentVideo && (
         <VideoPlayer
           videoId={currentVideo.videoId}
           videoTitle={currentVideo.title}
@@ -106,7 +109,7 @@ const VideoCategoryRow = ({ title, videos }) => {
           onNext={handleNext}
           onPrevious={handlePrevious}
         />
-      )}
+      )} */}
     </div>
   );
 };

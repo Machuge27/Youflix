@@ -4,6 +4,7 @@ import { getToken, removeToken } from '../utils/storage';
 const API_BASE_URL = process.env.BASE_URL || 'https://mrsgrace.pythonanywhere.com/';
 // const API_BASE_URL = 'http://192.168.76.138:8000/';
 // const API_BASE_URL = 'http://192.168.100.6:8000/';
+// const API_BASE_URL = 'http://localhost:8000/';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
