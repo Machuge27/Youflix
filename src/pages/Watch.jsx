@@ -629,7 +629,11 @@ const Watch = () => {
   // Render video details section
   const renderVideoDetails = () => {
     if (isLoading) {
-      return <div className="p-4 text-center">Loading video details...</div>;
+      return (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      );
     }
 
     if (!videoDetails) {
@@ -726,7 +730,11 @@ const Watch = () => {
   // Render related videos section
   const renderRelatedVideos = () => {
     if (isLoading) {
-      return <div className="p-4 text-center">Loading related videos...</div>;
+      return (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      );
     }
     if (!relatedVideos || relatedVideos.length === 0) {
       return <div className="p-4 text-center">No related videos available</div>;

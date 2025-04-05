@@ -135,10 +135,10 @@ const HomePage = () => {
       <div className="pt-20">
         <div className="bg-black min-h-screen p-6">
           {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <p className="text-xl">Loading videos...</p>
-            </div>
-          ) : error ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : error ? (
             <div className="flex justify-center items-center h-64">
               <p className="text-xl text-red-500">{error}</p>
             </div>

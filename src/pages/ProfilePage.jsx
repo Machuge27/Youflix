@@ -24,9 +24,11 @@ const ProfilePage = () => {
   // New state for video player
   const [currentVideo, setCurrentVideo] = useState(null);
   const [showPlayer, setShowPlayer] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserVideos = async () => {
+      setIsLoading(true);
       try {
         // In a real application, these would be separate API calls
         const history = await videoService.getWatchHistory();
@@ -55,6 +57,7 @@ const ProfilePage = () => {
         };
         
         console.log("Fetched favorites:", favorites);
+        setIsLoading(false);
         
         setVideos({
           watchHistory: transformVideos(history || []),
@@ -63,6 +66,8 @@ const ProfilePage = () => {
         });
       } catch (error) {
         console.error("Failed to fetch user videos:", error);
+        toast.error("Failed to load videos. Please try again later.");
+        setIsLoading(false);
       }
     };
     
@@ -243,175 +248,179 @@ const ProfilePage = () => {
         </div>
         
         {/* Profile Tabs */}
-        <div className="mb-6">
-          <div className="flex overflow-x-auto border-b border-gray-800 mb-4">
-            <button 
-              onClick={() => setActiveTab("watchHistory")}
-              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'watchHistory' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-              title="History"
-            >
-              <Clock size={18} className="mr-2" />
-              <span className="hidden sm:inline">Watch History</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab("favorites")}
-              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'favorites' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-              title="Favorites"
-            >
-              <Heart size={18} className="mr-2" />
-              <span className="hidden sm:inline">Favorites</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab("savedVideos")}
-              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'savedVideos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-              title="Saved Videos"
-            >
-              <Bookmark size={18} className="mr-2" />
-              <span className="hidden sm:inline">Saved Videos</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab("settings")}
-              className={`py-3 px-4 font-medium flex items-center ${activeTab === 'settings' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
-              title="Settings"
-            >
-              <Settings size={18} className="mr-2" />
-              <span className="hidden sm:inline">Settings</span>
-            </button>
-          </div>
-          
-          {/* Tab Content */}
-          {activeTab !== "settings" ? (
-            <>
-              <h2 className="text-xl font-semibold mb-4">
-                {activeTab === "watchHistory" ? "Watch History" : 
-                 activeTab === "favorites" ? "Favorites" : 
-                 "Saved Videos"}
-              </h2>
-              
-              {getActiveVideos().length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {getActiveVideos().map((video, index) => (
-                    <div 
-                      key={video.id || index} 
-                      className="bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:bg-gray-800 transition-colors"
-                      onClick={() => playVideo(video)}
-                    >
-                      <div className="relative">
-                        <img 
-                          src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`} 
-                          alt={video.title} 
-                          className="w-full h-48 object-cover"
-                        />
-                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 px-2 py-1 text-xs rounded">
-                          {formatDuration(video.duration)}
-                        </div>
-                        {video.currentTime && video.currentTime !== "0:00" && (
-                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
-                            <div 
-                              className="h-full bg-red-500" 
-                              style={{ 
-                                width: `${(parseFloat(video.currentTime.split(':').reduce((acc, time) => (60 * acc) + +time)) / 
-                                         parseFloat(video.duration.split(':').reduce((acc, time) => (60 * acc) + +time))) * 100}%` 
-                              }}
-                            ></div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-medium line-clamp-2 mb-1">{video.title}</h3>
-                        <p className="text-gray-400 text-sm">
-                          {video.channelName}
-                          {video.category && <span className="ml-2 px-2 py-0.5 bg-gray-800 rounded-full text-xs">{video.category}</span>}
-                        </p>
-                        {video.savedAt && (
-                          <p className="text-gray-500 text-xs mt-2">
-                            Saved on {formatSavedDate(video.savedAt)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Film size={48} className="mx-auto text-gray-600 mb-4" />
-                  <h3 className="text-xl font-medium text-gray-400">No videos found</h3>
-                  <p className="text-gray-500 mt-2">
-                    {activeTab === "watchHistory" ? "Videos you watch will appear here" : 
-                     activeTab === "favorites" ? "Your favorite videos will appear here" : 
-                     "Videos you save will appear here"}
-                  </p>
+          <div className="mb-6">
+            <div className="flex overflow-x-auto border-b border-gray-800 mb-4">
+              <button 
+                onClick={() => setActiveTab("watchHistory")}
+                className={`py-3 px-4 font-medium flex items-center ${activeTab === 'watchHistory' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+                title="History"
+              >
+                <Clock size={18} className="mr-2" />
+                <span className="hidden sm:inline">Watch History</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab("favorites")}
+                className={`py-3 px-4 font-medium flex items-center ${activeTab === 'favorites' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+                title="Favorites"
+              >
+                <Heart size={18} className="mr-2" />
+                <span className="hidden sm:inline">Favorites</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab("savedVideos")}
+                className={`py-3 px-4 font-medium flex items-center ${activeTab === 'savedVideos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+                title="Saved Videos"
+              >
+                <Bookmark size={18} className="mr-2" />
+                <span className="hidden sm:inline">Saved Videos</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab("settings")}
+                className={`py-3 px-4 font-medium flex items-center ${activeTab === 'settings' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-400'}`}
+                title="Settings"
+              >
+                <Settings size={18} className="mr-2" />
+                <span className="hidden sm:inline">Settings</span>
+              </button>
+            </div>
+            
+            {/* Tab Content */}
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : activeTab !== "settings" ? (
+              <>
+                <h2 className="text-xl font-semibold mb-4">
+            {activeTab === "watchHistory" ? "Watch History" : 
+             activeTab === "favorites" ? "Favorites" : 
+             "Saved Videos"}
+                </h2>
+                
+                {getActiveVideos().length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {getActiveVideos().map((video, index) => (
+                <div 
+                  key={video.id || index} 
+                  className="bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:bg-gray-800 transition-colors"
+                  onClick={() => playVideo(video)}
+                >
+                  <div className="relative">
+              <img 
+                src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`} 
+                alt={video.title} 
+                className="w-full h-48 object-cover"
+              />
+              <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 px-2 py-1 text-xs rounded">
+                {formatDuration(video.duration)}
+              </div>
+              {video.currentTime && video.currentTime !== "0:00" && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                  <div 
+                    className="h-full bg-red-500" 
+                    style={{ 
+                width: `${(parseFloat(video.currentTime.split(':').reduce((acc, time) => (60 * acc) + +time)) / 
+                   parseFloat(video.duration.split(':').reduce((acc, time) => (60 * acc) + +time))) * 100}%` 
+                    }}
+                  ></div>
                 </div>
               )}
-            </>
-          ) : (
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Account Settings</h2>
-              
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Email</h3>
-                  <p className="text-gray-400">{user?.email || "user@example.com"}</p>
+                  </div>
+                  <div className="p-4">
+              <h3 className="font-medium line-clamp-2 mb-1">{video.title}</h3>
+              <p className="text-gray-400 text-sm">
+                {video.channelName}
+                {video.category && <span className="ml-2 px-2 py-0.5 bg-gray-800 rounded-full text-xs">{video.category}</span>}
+              </p>
+              {video.savedAt && (
+                <p className="text-gray-500 text-xs mt-2">
+                  Saved on {formatSavedDate(video.savedAt)}
+                </p>
+              )}
+                  </div>
                 </div>
+              ))}
+            </div>
+                ) : (
+            <div className="text-center py-12">
+              <Film size={48} className="mx-auto text-gray-600 mb-4" />
+              <h3 className="text-xl font-medium text-gray-400">No videos found</h3>
+              <p className="text-gray-500 mt-2">
+                {activeTab === "watchHistory" ? "Videos you watch will appear here" : 
+                 activeTab === "favorites" ? "Your favorite videos will appear here" : 
+                 "Videos you save will appear here"}
+              </p>
+            </div>
+                )}
+              </>
+            ) : (
+              <div className="bg-gray-900 rounded-lg p-6">
+                <h2 className="text-xl font-semibold mb-4">Account Settings</h2>
                 
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Preferences</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-gray-300">Autoplay videos</label>
-                      <div className="relative inline-block w-12 h-6 bg-gray-700 rounded-full cursor-pointer">
-                        <input type="checkbox" className="sr-only" defaultChecked />
-                        <span className="block absolute left-1 top-1 bg-blue-500 w-4 h-4 rounded-full transition-transform duration-200 transform translate-x-6"></span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <label className="text-gray-300">Email notifications</label>
-                      <div className="relative inline-block w-12 h-6 bg-gray-700 rounded-full cursor-pointer">
-                        <input type="checkbox" className="sr-only" />
-                        <span className="block absolute left-1 top-1 bg-gray-400 w-4 h-4 rounded-full transition-transform duration-200"></span>
-                      </div>
-                    </div>
+                <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium mb-2">Email</h3>
+              <p className="text-gray-400">{user?.email || "user@example.com"}</p>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-medium mb-2">Preferences</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-gray-300">Autoplay videos</label>
+                  <div className="relative inline-block w-12 h-6 bg-gray-700 rounded-full cursor-pointer">
+              <input type="checkbox" className="sr-only" defaultChecked />
+              <span className="block absolute left-1 top-1 bg-blue-500 w-4 h-4 rounded-full transition-transform duration-200 transform translate-x-6"></span>
                   </div>
                 </div>
                 
+                <div className="flex items-center justify-between">
+                  <label className="text-gray-300">Email notifications</label>
+                  <div className="relative inline-block w-12 h-6 bg-gray-700 rounded-full cursor-pointer">
+              <input type="checkbox" className="sr-only" />
+              <span className="block absolute left-1 top-1 bg-gray-400 w-4 h-4 rounded-full transition-transform duration-200"></span>
+                  </div>
                 </div>
-                <div className="flex flex-col sm:flex-row mt-8 gap-4">
-                  <button 
-                    onClick={logout}
-                    className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
-                  >
-                    Sign Out
-                  </button>
-                  <button 
-                    title="Get Mobile App"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
-                  >
-                    <LayoutGrid size={18} />
-                    <span className="font-[10px]">Get the Mobile App</span>
-                  </button>
-                  <button 
-                    title="Get browser extension"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
-                  >
-                    <Blocks size={18} />
-                    <span className="font-[10px]">Get the Browser Extension</span>
-                  </button>
-                  <button 
-                    title="Get browser extension"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-green-700 rounded text-white font-medium"
-                    onClick={handleBackup}
-                  >
-                    <DatabaseBackup size={18} />
-                    <span className="font-[10px]">Backup</span>
-                  </button>
-                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Video Player */}
+            
+            </div>
+            <div className="flex flex-col sm:flex-row mt-8 gap-4">
+              <button 
+                onClick={logout}
+                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
+              >
+                Sign Out
+              </button>
+              <button 
+                title="Get Mobile App"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
+              >
+                <LayoutGrid size={18} />
+                <span className="font-[10px]">Get the Mobile App</span>
+              </button>
+              <button 
+                title="Get browser extension"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded text-white font-medium"
+              >
+                <Blocks size={18} />
+                <span className="font-[10px]">Get the Browser Extension</span>
+              </button>
+              <button 
+                title="Get browser extension"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-green-700 rounded text-white font-medium"
+                onClick={handleBackup}
+              >
+                <DatabaseBackup size={18} />
+                <span className="font-[10px]">Backup</span>
+              </button>
+            </div>
+              </div>
+            )}
+          </div>
+              </div>
+              
+              {/* Video Player */}
       {showPlayer && currentVideo && (
         <VideoPlayer 
           videoId={currentVideo.id || currentVideo.videoId}
